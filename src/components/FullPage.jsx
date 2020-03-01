@@ -5,6 +5,7 @@ import isMobileDevice from '../utils/is-mobile';
 import { getObjectValues } from '../utils/helpers';
 import Slide from './Slide';
 import Controls from './Controls';
+import { SliderService } from '../services';
 
 const scrollMode = {
   FULL_PAGE: 'full-page',
@@ -29,6 +30,12 @@ export default class FullPage extends React.Component {
     this._touchStart = 0;
     this._isMobile = null;
 
+    this.subscription = {
+      next: this.scrollNext,
+      prev: this.scrollPrev,
+      moveTo: this.scrollToSlide,
+    };
+
     this.state = {
       activeSlide: props.initialSlide,
     };
@@ -44,6 +51,8 @@ export default class FullPage extends React.Component {
     }
     window.addEventListener('resize', this.onResize);
 
+    SliderService.subscribe(this.subscription);
+
     this.onResize();
     this.scrollToSlide(this.props.initialSlide);
   }
@@ -55,6 +64,9 @@ export default class FullPage extends React.Component {
     } else {
       document.removeEventListener('wheel', this.onScroll);
     }
+
+    SliderService.unsubscribe(this.subscription);
+
     window.removeEventListener('resize', this.onResize);
   }
 
@@ -201,8 +213,8 @@ FullPage.propTypes = {
 };
 
 FullPage.defaultProps = {
-  afterChange: () => {},
-  beforeChange: () => {},
+  afterChange: () => { },
+  beforeChange: () => { },
   controls: false,
   controlsProps: {},
   duration: 700,
